@@ -1,79 +1,54 @@
-import scala.collection.mutable.Queue
+/**
+ * Breadth first traversal.
+ */
 
-class Graph(n: Int) {
-  var edges = new Array[List[Int]](n)
+case class EdgeList(v: Int, adj: List[Int]) {
+}
 
-  for (i <- 0 until n) {
-    edges(i) = List[Int]()
-  }
+case class Graph(graph: List[EdgeList]) {
+  val edges: Map[Int, EdgeList] = graph.map(l => (l.v, l)).toMap
+}
 
-  def nodesCount = n
+def visit(v: Int) {
+  print(v + " ")
+}
 
-  def addEdge(from: Int, to: Int) = {
-    edges(from) = to :: edges(from)
-  }
+def BFS_Traverse(graph: Graph, visited: Set[Int], front: List[Int]): Unit = {
+  println("V: " + visited + " F: " + front)
 
-  def printGraph() = {
-    for (i <- 0 until n) {
-      print(i + " ->")
-      edges(i).foreach((x: Int) => {
-        print(" " + x)
-      })
-      println
-    }
+  // We're starting to construct a new front from nothing and we keep track of 
+  // the currently visited vertices.
+  val startState = (visited, List.empty[Int])
+  
+  val (newVisited, newFront) = front.foldLeft(startState)((state, v) => {
+    visit(v)
+
+    val (curVisited, curFront) = state
+    val adjNotVisited: List[Int] = graph.edges(v).adj.filterNot(v => curVisited.contains(v))
+
+    // Mark new vertices as visited and add them to the front.
+    (adjNotVisited.toSet ++ curVisited, adjNotVisited ++ curFront)
+  })
+
+  println
+
+  if (newFront.size > 0) {
+    BFS_Traverse(graph, newVisited, newFront)
+  } else {
+    println("Terminating. All visited: " + visited)
   }
 }
 
-def BFS(g: Graph, from: Int, to: Int) = {
-  var queue = new Queue[Int]()
-  var visited = new Array[Boolean](g.nodesCount)
-  var prev = new Array[Int](g.nodesCount)
-
-  queue += from
-  visited(from) = true
-  prev(from) = -1
-
-  var found = false
-  while (queue.length > 0 && !found) {
-    var node = queue.dequeue
-
-    if (node != to) {
-      g.edges(node).foreach((to: Int) => {
-        if (!visited(to)) {
-          queue.enqueue(to)
-  	  visited(to) = true
-	  prev(to) = node
-        }
-      })
-    } else {
-      found = true
-    }
-  }
-
-  var maybeNot = ""
-  if (!found) maybeNot = "not "
-  println("A path from " + from + " to " + to + " was " + maybeNot + "found.")
-
-  if (found) {
-    var path = List[Int]()
-    var currentNode = to
-    while (currentNode != -1) {
-      path = currentNode :: path 
-      currentNode = prev(currentNode)
-    }
-    path.foreach((node: Int) => {
-      print(" " + node)
-    })
-    println
-  }
+def BFS(graph: Graph, start: Int): Unit = {
+  BFS_Traverse(graph, Set(start), List(start))
 }
 
-var g = new Graph(5)
-g.addEdge(0, 1)
-g.addEdge(1, 2)
-g.addEdge(2, 3)
-g.addEdge(0, 3)
-g.addEdge(3, 4)
+val edges1 = EdgeList(1, List(2, 3))
+val edges2 = EdgeList(2, List(5))
+val edges3 = EdgeList(3, List(5))
+val edges5 = EdgeList(5, List(1))
 
-BFS(g, 0, 4)
-BFS(g, 4, 0)
+val g = List(edges1, edges2, edges3, edges5)
+val graph = Graph(g)
+
+BFS(graph, 1)
