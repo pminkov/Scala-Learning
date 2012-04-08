@@ -13,15 +13,13 @@ def bits(x: Int): Int = {
 }
 
 def toBinary(x: Int): String = {
-  def convert(x: Int, first: Boolean): String = {
-    if (x == 0) {
-      if (first) "0" else ""
-    } else {
-      convert(x / 2, false) + ('0' + x % 2).toChar
-    }
+  def toBinaryInternal(x: Int): String = {
+    if (x == 0) ""
+    else toBinaryInternal(x / 2) + ('0' + x % 2).toChar
   }
 
-  convert(x, true)
+  if (x == 0) "0"
+  else toBinaryInternal(x)
 }
 
 for (x <- 0 to 17) {
